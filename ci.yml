@@ -1,0 +1,59 @@
+name: CI — Notebook Validation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install nbconvert ipykernel
+
+      - name: Validate notebook syntax
+        run: |
+          python -c "
+          import json
+          nb = json.load(open('notebooks/01_walkthrough.ipynb'))
+          cells = nb['cells']
+          code_cells = [c for c in cells if c['cell_type'] == 'code']
+          print(f'✅ Notebook valid: {len(cells)} cells ({len(code_cells)} code)')
+          # Check for common issues
+          for i, c in enumerate(cells):
+              src = ''.join(c['source'])
+              assert 'n_sae' not in src, f'❌ Cell {i} contains n_sae (leakage risk)'
+          print('✅ No leakage variables detected')
+          "
+
+      - name: Verify imports
+        run: |
+          python -c "
+          import polars, duckdb, pydantic, torch, sklearn, matplotlib, seaborn, scipy
+          print(f'✅ All imports OK')
+          print(f'   polars={polars.__version__}')
+          print(f'   torch={torch.__version__}')
+          print(f'   sklearn={sklearn.__version__}')
+          "

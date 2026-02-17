@@ -291,7 +291,7 @@ clinops-ai/
 
 ## 📖 Technical Report
 
-The accompanying [LaTeX report](docs/report.pdf) (14 pages, JCDE journal style) includes:
+The accompanying [LaTeX report](docs/AI_ClinOps.pdf) (14 pages, JCDE journal style) includes:
 - Complete mathematical formulation for all statistical and ML methods
 - 10 formally defined equations (Fisher, KM, ELBO, GRU gates, Integrated Gradients, etc.)
 - Full ablation results with confidence intervals
